@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Beauty Roulette</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Noto+Serif+JP:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#fbf1ec; --bg2:#f6e3dc; --card:rgba(255,252,250,.82); --ink:#4a2f35; --sub:#8c6b70;
+  --rose:#b76e79; --gold:#c4a075; --line:rgba(183,110,121,.35); --illus:#b76e79; --illus-op:.28;
+  --serif:'Cormorant Garamond','Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',Georgia,serif;
+  --jp:'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#2b1e22; --bg2:#38262c; --card:rgba(50,35,40,.82); --ink:#f6e6e1; --sub:#c8a7ab;
+    --rose:#e0a0a8; --gold:#d8b88a; --line:rgba(224,160,168,.35); --illus:#e0a0a8; --illus-op:.22;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#2b1e22; --bg2:#38262c; --card:rgba(50,35,40,.82); --ink:#f6e6e1; --sub:#c8a7ab;
+  --rose:#e0a0a8; --gold:#d8b88a; --line:rgba(224,160,168,.35); --illus:#e0a0a8; --illus-op:.22;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:var(--jp);color:var(--ink);
+  background:radial-gradient(circle at 20% 10%,var(--bg2),var(--bg) 60%);overflow-x:hidden}
+.bgart{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;color:var(--illus);opacity:var(--illus-op)}
+main{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:36px 18px 56px;text-align:center}
+.brand{font-family:var(--serif);letter-spacing:.42em;font-size:13px;color:var(--gold);margin:0 0 10px;padding-left:.42em}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,9vw,48px);letter-spacing:.08em;margin:0;line-height:1.1}
+h1 em{font-style:italic;color:var(--rose)}
+.lead{font-size:12.5px;color:var(--sub);letter-spacing:.14em;margin:12px 0 26px}
+.card{background:var(--card);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid var(--line);border-radius:28px;padding:26px 18px 30px;box-shadow:0 18px 50px rgba(183,110,121,.18)}
+.range{display:flex;gap:12px;justify-content:center;align-items:flex-end;flex-wrap:wrap}
+.range label{display:flex;flex-direction:column;gap:6px;font-size:11px;letter-spacing:.2em;color:var(--sub)}
+.range input[type=number]{width:120px;padding:10px 12px;text-align:center;font:600 20px var(--serif);color:var(--ink);
+  background:transparent;border:0;border-bottom:1px solid var(--rose);outline:none;border-radius:0}
+.range input:focus{border-bottom-width:2px}
+.dash{font-family:var(--serif);font-size:22px;color:var(--gold);padding-bottom:10px}
+.opt{display:inline-flex;gap:8px;align-items:center;margin-top:16px;font-size:12px;color:var(--sub);letter-spacing:.1em;cursor:pointer}
+.opt input{accent-color:var(--rose);width:16px;height:16px}
+.msg{min-height:18px;margin:12px 0 0;font-size:12px;color:var(--rose);letter-spacing:.06em}
+.stage{position:relative;width:min(86vw,440px);margin:14px auto 10px;aspect-ratio:1}
+.stage canvas{width:100%;height:100%;display:block;border-radius:50%;
+  filter:drop-shadow(0 10px 22px rgba(120,60,70,.28))}
+.pointer{position:absolute;left:50%;top:-10px;transform:translateX(-50%);z-index:3;width:30px;height:38px;
+  filter:drop-shadow(0 3px 3px rgba(0,0,0,.25))}
+.hub{position:absolute;left:50%;top:50%;width:19%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;z-index:2;
+  background:radial-gradient(circle at 35% 30%,#fff7ee,#e7c9a0 55%,#b98d62);border:3px solid #fff8ef;
+  display:grid;place-items:center;font:italic 600 13px var(--serif);color:#6a4630;letter-spacing:.1em}
+button.spin{margin-top:14px;padding:15px 54px;border:0;border-radius:999px;cursor:pointer;
+  font:600 15px var(--serif);letter-spacing:.35em;padding-left:calc(54px + .35em);color:#fff;
+  background:linear-gradient(135deg,#d18a93,#b76e79 55%,#c4a075);box-shadow:0 10px 24px rgba(183,110,121,.4);
+  transition:transform .15s,box-shadow .15s,opacity .2s}
+button.spin:hover{transform:translateY(-2px)}
+button.spin:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.result{margin-top:26px}
+.result small{display:block;font:11px var(--serif);letter-spacing:.4em;color:var(--gold);padding-left:.4em}
+.result .num{font-family:var(--serif);font-size:clamp(64px,20vw,96px);line-height:1.1;color:var(--rose);font-weight:600}
+.meta{font-size:11px;color:var(--sub);letter-spacing:.1em;margin-top:2px}
+.hist{margin-top:18px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.hist span{font:600 14px var(--serif);padding:3px 12px;border:1px solid var(--line);border-radius:999px;color:var(--sub)}
+.link{margin-top:14px;background:none;border:0;color:var(--sub);font:12px var(--jp);letter-spacing:.1em;
+  text-decoration:underline;cursor:pointer}
+footer{margin-top:28px;font:11px var(--serif);letter-spacing:.35em;color:var(--sub)}
+[hidden]{display:none!important}
+.admin-btn{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:14px;z-index:20;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:var(--ink);font:12px var(--jp);letter-spacing:.12em;cursor:pointer}
+.range input[type=password],.pwi{width:210px;padding:10px 12px;text-align:center;font:600 18px var(--serif);color:var(--ink);background:transparent;border:0;border-bottom:1px solid var(--rose);outline:none;border-radius:0}
+.sec{font:600 14px var(--serif);letter-spacing:.3em;color:var(--gold);margin:30px 0 14px}
+.sec:first-child{margin-top:4px}
+#rangelab{font:600 13px var(--serif);letter-spacing:.3em;color:var(--gold);margin-bottom:6px}
+.big{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;background:rgba(74,47,53,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);animation:fade .3s}
+.bigin{position:relative;width:min(92vw,520px);padding:34px 20px 30px;text-align:center;border-radius:32px;border:1px solid var(--line);background:radial-gradient(circle at 50% 30%,var(--bg),var(--bg2));box-shadow:0 30px 80px rgba(0,0,0,.35);animation:pop .55s cubic-bezier(.2,1.4,.4,1)}
+.bigin small{display:block;font:12px var(--serif);letter-spacing:.5em;color:var(--gold);padding-left:.5em}
+#bignum{font:600 clamp(130px,42vw,260px)/1.05 var(--serif);color:var(--rose);margin:6px 0 14px;text-shadow:0 6px 30px rgba(183,110,121,.35)}
+.lt{font-size:15px;margin:10px 0 16px}
+.big .link{display:block;margin:12px auto 0}
+.spark{position:absolute;color:var(--gold);pointer-events:none;animation:flt 2.4s ease-in-out infinite}
+@keyframes fade{from{opacity:0}}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+@keyframes flt{0%,100%{transform:translateY(0) scale(1);opacity:.9}50%{transform:translateY(-14px) scale(1.3);opacity:.4}}
+</style>
+</head>
+<body>
+
+<svg class="bgart" aria-hidden="true" viewBox="0 0 800 1200" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+  <defs>
+    <symbol id="lip" viewBox="0 0 60 140"><rect x="15" y="82" width="30" height="50" rx="3"/><rect x="13" y="70" width="34" height="12" rx="2"/><path d="M18 70V42Q30 16 42 38V70Z" fill="currentColor" fill-opacity=".25"/><path d="M24 90v34"/></symbol>
+    <symbol id="cmp" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46"/><circle cx="50" cy="50" r="34" fill="currentColor" fill-opacity=".15"/><path d="M34 40Q42 28 56 30"/><circle cx="50" cy="50" r="46" stroke-dasharray="2 6"/></symbol>
+    <symbol id="brs" viewBox="0 0 40 160"><path d="M16 62h8l-2 88q-2 6-4 0Z"/><rect x="14" y="40" width="12" height="22" rx="2"/><path d="M14 40Q8 12 20 2Q32 12 26 40Z" fill="currentColor" fill-opacity=".25"/></symbol>
+    <symbol id="pol" viewBox="0 0 60 110"><rect x="10" y="50" width="40" height="52" rx="9"/><rect x="22" y="36" width="16" height="14"/><rect x="24" y="6" width="12" height="30" rx="3" fill="currentColor" fill-opacity=".25"/><path d="M18 62v28"/></symbol>
+    <symbol id="prf" viewBox="0 0 70 110"><rect x="8" y="42" width="54" height="62" rx="14"/><rect x="28" y="28" width="14" height="14"/><rect x="24" y="8" width="22" height="20" rx="5" fill="currentColor" fill-opacity=".25"/><circle cx="35" cy="74" r="12"/></symbol>
+    <symbol id="spk" viewBox="0 0 40 40"><path d="M20 2Q22 18 38 20Q22 22 20 38Q18 22 2 20Q18 18 20 2Z"/></symbol>
+  </defs>
+  <use href="#lip" x="30" y="60" width="90" height="210" transform="rotate(-14 75 165)"/>
+  <use href="#cmp" x="640" y="40" width="130" height="130"/>
+  <use href="#brs" x="690" y="330" width="60" height="240" transform="rotate(18 720 450)"/>
+  <use href="#pol" x="20" y="400" width="90" height="165" transform="rotate(10 65 480)"/>
+  <use href="#prf" x="50" y="800" width="110" height="170" transform="rotate(-8 105 885)"/>
+  <use href="#lip" x="650" y="760" width="80" height="187" transform="rotate(16 690 850)"/>
+  <use href="#cmp" x="560" y="1030" width="120" height="120"/>
+  <use href="#pol" x="260" y="1060" width="70" height="128" transform="rotate(-12 295 1120)"/>
+  <use href="#brs" x="150" y="1000" width="46" height="184" transform="rotate(-22 173 1090)"/>
+  <use href="#prf" x="330" y="20" width="70" height="108" transform="rotate(8 365 74)"/>
+  <use href="#spk" x="190" y="260" width="36" height="36"/>
+  <use href="#spk" x="600" y="620" width="28" height="28"/>
+  <use href="#spk" x="120" y="680" width="22" height="22"/>
+  <use href="#spk" x="560" y="220" width="24" height="24"/>
+  <use href="#spk" x="440" y="1110" width="30" height="30"/>
+</svg>
+
+<button class="admin-btn" id="adminBtn" type="button">⚙ 管理画面</button>
+
+<main id="home">
+  <p class="brand">BEAUTY ROULETTE</p>
+  <h1>Lucky <em>Number</em></h1>
+  <p class="lead">範囲を決めて、運命の数字を選びましょう</p>
+
+  <section class="card">
+    <div id="rangelab"></div>
+    <p class="msg" id="msg"></p>
+
+    <div class="stage">
+      <svg class="pointer" viewBox="0 0 30 38"><path d="M15 38L2 8Q15-6 28 8Z" fill="#b76e79" stroke="#fff8ef" stroke-width="2.5" stroke-linejoin="round"/><circle cx="15" cy="12" r="3.5" fill="#fff8ef"/></svg>
+      <canvas id="wheel" width="1040" height="1040" role="img" aria-label="ルーレット"></canvas>
+      <div class="hub">GO</div>
+    </div>
+    <div class="meta" id="meta"></div>
+    <button class="spin" id="spin">SPIN</button>
+
+    <div class="result">
+      <small>YOUR NUMBER</small>
+      <div class="num" id="num">–</div>
+    </div>
+    <div class="hist" id="hist"></div>
+    <button class="link" id="clear" hidden>履歴をリセット</button>
+  </section>
+  <footer>♡ GLOW UP ♡</footer>
+</main>
+
+<main id="admin" hidden>
+  <p class="brand">ADMIN</p>
+  <h1>管理<em>画面</em></h1>
+  <p class="lead">ルーレットの設定を変更します</p>
+  <section class="card">
+    <h2 class="sec">数字の範囲</h2>
+    <div class="range">
+      <label>MIN<input id="min" type="number" inputmode="numeric" value="1"></label>
+      <span class="dash">–</span>
+      <label>MAX<input id="max" type="number" inputmode="numeric" value="10"></label>
+    </div>
+    <label class="opt"><input id="norepeat" type="checkbox">出た数字は除外する</label>
+    <p class="msg" id="amsg"></p>
+    <button class="spin" id="save" type="button">保存</button>
+    <h2 class="sec">パスワード変更</h2>
+    <div class="range"><label>NEW PASSWORD<input id="newpw" type="password" autocomplete="new-password"></label></div>
+    <button class="link" id="changepw" type="button">パスワードを変更する</button>
+    <br><button class="link" id="back" type="button">← ルーレットへ戻る</button>
+  </section>
+</main>
+
+<div class="big" id="big" hidden>
+  <div class="bigin" id="bigin"><small>YOUR NUMBER</small><div id="bignum">–</div><button class="spin" id="bigclose" type="button">CLOSE</button></div>
+</div>
+
+<div class="big" id="login" hidden>
+  <div class="bigin" style="width:min(90vw,380px)">
+    <small>ADMIN LOGIN</small>
+    <div class="lt">パスワードを入力してください</div>
+    <input class="pwi" id="pw" type="password" autocomplete="current-password">
+    <p class="msg" id="lmsg"></p>
+    <button class="spin" id="loginOk" type="button" style="padding:13px 40px 13px calc(40px + .35em)">LOGIN</button>
+    <button class="link" id="loginCancel" type="button">キャンセル</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var cv=$('wheel'), ctx=cv.getContext('2d'), S=1040, C=S/2, R=490;
+  var PAL=[['#f9d9d4','#6a3a42'],['#efb3b3','#5a2c34'],['#fbeee3','#6a4a3a'],['#d98c97','#fff'],['#e8cfae','#5e4330'],['#c9707e','#fff']];
+  var pool=[], cur=0, spinning=false, pending=null, history=[];
+
+  function msg(t){$('msg').textContent=t||''}
+
+  function build(){
+    var a=parseInt($('min').value,10), b=parseInt($('max').value,10);
+    if(isNaN(a)||isNaN(b)){msg('数字を入力してください');return false}
+    if(a>b){var t=a;a=b;b=t}
+    if(b-a+1>1000){msg('範囲は最大1000個までです');return false}
+    pool=[];for(var i=a;i<=b;i++)pool.push(i);
+    msg('');return true;
+  }
+
+  function reset(){
+    var w=cv;w.style.transition='none';w.style.transform='rotate(0deg)';cur=0;void w.offsetWidth;
+  }
+
+  function draw(){
+    var n=pool.length;
+    ctx.clearRect(0,0,S,S);
+    if(!n){return}
+    var arc=Math.PI*2/n;
+    // outer gold ring
+    var g=ctx.createLinearGradient(0,0,S,S);g.addColorStop(0,'#f1dcb8');g.addColorStop(.5,'#b98d62');g.addColorStop(1,'#f1dcb8');
+    ctx.beginPath();ctx.arc(C,C,C-4,0,7);ctx.fillStyle=g;ctx.fill();
+    ctx.beginPath();ctx.arc(C,C,R+14,0,7);ctx.fillStyle='#fff8ef';ctx.fill();
+    for(var i=0;i<n;i++){
+      var c=PAL[i%PAL.length];
+      if(i===n-1&&n>1&&i%PAL.length===0)c=PAL[3];
+      ctx.beginPath();ctx.moveTo(C,C);ctx.arc(C,C,R,i*arc,(i+1)*arc);ctx.closePath();
+      ctx.fillStyle=c[0];ctx.fill();
+      if(n>1&&n<=200){ctx.strokeStyle='rgba(255,248,239,.9)';ctx.lineWidth=n>60?1.5:3;ctx.stroke()}
+      if(n<=60){
+        var txt=String(pool[i]);
+        var size=Math.min(64,Math.max(18,2*Math.PI*R*.78/n*.55),(R*.3)/(txt.length*.6));
+        ctx.save();ctx.translate(C,C);ctx.rotate((i+.5)*arc);
+        ctx.font='600 '+size+'px "Cormorant Garamond",Georgia,serif';
+        ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillStyle=c[1];
+        ctx.fillText(txt,R-34,0);ctx.restore();
+      }
+    }
+    // inner decorative ring
+    ctx.beginPath();ctx.arc(C,C,R*.22,0,7);ctx.fillStyle='#fff8ef';ctx.fill();
+    $('meta').textContent=n+' 個の数字'+(n>60?'（分割が多いため数字は結果で表示）':'');
+  }
+
+  function renderHist(){
+    var h=$('hist');h.innerHTML='';
+    history.slice(-12).forEach(function(v){var s=document.createElement('span');s.textContent=v;h.appendChild(s)});
+    $('clear').hidden=!history.length;
+  }
+
+  function refresh(){
+    if(spinning)return;
+    pending=null;
+    if(build()){reset();draw();$('spin').disabled=false}
+    else{$('spin').disabled=true}
+  }
+
+  function spin(){
+    if(spinning)return;
+    if(pending!==null&&$('norepeat').checked){
+      pool=pool.filter(function(v){return v!==pending});
+      reset();draw();
+    }
+    pending=null;
+    var n=pool.length;
+    if(!n){msg('すべての数字が出ました。範囲を変更するかリセットしてください');$('spin').disabled=true;return}
+    spinning=true;$('spin').disabled=true;msg('');
+    var idx=Math.floor(Math.random()*n), a=360/n;
+    var center=(idx+.5)*a+(Math.random()-.5)*a*.7;
+    var target=-90-center;
+    var delta=(((target-cur)%360)+360)%360;
+    cur+=360*6+delta;
+    cv.style.transition='transform 5.2s cubic-bezier(.12,.6,.1,1)';
+    cv.style.transform='rotate('+cur+'deg)';
+    setTimeout(function(){
+      var v=pool[idx];
+      $('num').textContent=v;history.push(v);renderHist();showBig(v);
+      pending=v;spinning=false;$('spin').disabled=false;
+      if($('norepeat').checked&&pool.length<=1){msg('これで最後の数字です');}
+    },5300);
+  }
+
+  $('spin').addEventListener('click',spin);
+  document.querySelector('.hub').addEventListener('click',spin);
+  function readRange(){
+    var a=parseInt($('min').value,10), b=parseInt($('max').value,10);
+    if(isNaN(a)||isNaN(b))return null;
+    if(a>b){var t=a;a=b;b=t}
+    return [a,b];
+  }
+  function showRange(){
+    var r=readRange()||[1,10];
+    $('rangelab').textContent='RANGE  '+r[0]+' – '+r[1]+($('norepeat').checked?'  ・重複なし':'');
+  }
+  function amsg(t){$('amsg').textContent=t||''}
+  function goHome(){$('admin').hidden=true;$('home').hidden=false;$('adminBtn').hidden=false;window.scrollTo(0,0)}
+  function goAdmin(){$('home').hidden=true;$('admin').hidden=false;$('adminBtn').hidden=true;amsg('');window.scrollTo(0,0)}
+
+  function showBig(v){
+    var t=String(v), el=$('bignum');
+    el.textContent=t;
+    el.style.fontSize=t.length>5?'clamp(60px,20vw,130px)':t.length>3?'clamp(90px,28vw,190px)':'';
+    var box=$('bigin');
+    box.querySelectorAll('.spark').forEach(function(s){s.remove()});
+    for(var i=0;i<9;i++){
+      var s=document.createElement('span');s.className='spark';s.textContent='✦';
+      s.style.left=(Math.random()*88+4)+'%';s.style.top=(Math.random()*88+4)+'%';
+      s.style.fontSize=(12+Math.random()*18)+'px';s.style.animationDelay=(Math.random()*2)+'s';
+      box.appendChild(s);
+    }
+    $('big').hidden=false;
+  }
+  function closeBig(){$('big').hidden=true}
+  $('bigclose').addEventListener('click',closeBig);
+  $('big').addEventListener('click',function(e){if(e.target===$('big'))closeBig()});
+
+  $('adminBtn').addEventListener('click',function(){
+    if(spinning)return;
+    $('pw').value='';$('lmsg').textContent='';$('login').hidden=false;$('pw').focus();
+  });
+  function api(action,body){
+    var opt=body===undefined?{credentials:'same-origin'}:{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)};
+    return fetch('api.php?action='+action,opt).then(function(r){
+      return r.json().catch(function(){return {ok:false,error:'server'}}).then(function(j){j.status=r.status;return j});
+    }).catch(function(){return {ok:false,error:'network',status:0}});
+  }
+  async function tryLogin(){
+    $('lmsg').textContent='';
+    var j=await api('login',{password:$('pw').value});
+    if(j.ok){$('login').hidden=true;goAdmin()}
+    else if(j.status===429){$('lmsg').textContent='試行回数が多すぎます。10分ほどおいてお試しください'}
+    else if(j.error==='network'||j.error==='server'){$('lmsg').textContent='サーバーに接続できません'}
+    else{$('lmsg').textContent='パスワードが違います';$('pw').select()}
+  }
+  $('loginOk').addEventListener('click',tryLogin);
+  $('pw').addEventListener('keydown',function(e){if(e.key==='Enter')tryLogin()});
+  $('loginCancel').addEventListener('click',function(){$('login').hidden=true});
+  $('login').addEventListener('click',function(e){if(e.target===$('login'))$('login').hidden=true});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeBig();$('login').hidden=true}});
+  $('back').addEventListener('click',function(){api('logout',{});goHome()});
+
+  $('save').addEventListener('click',async function(){
+    var r=readRange();
+    if(!r){amsg('数字を入力してください');return}
+    if(r[1]-r[0]+1>1000){amsg('範囲は最大1000個までです');return}
+    $('min').value=r[0];$('max').value=r[1];
+    var j=await api('save',{min:r[0],max:r[1],nr:$('norepeat').checked});
+    if(!j.ok){amsg(j.status===401?'ログインの有効期限が切れました。入り直してください':'保存に失敗しました');return}
+    api('logout',{});
+    history=[];renderHist();$('num').textContent='–';
+    showRange();refresh();goHome();
+  });
+  $('changepw').addEventListener('click',async function(){
+    var p=$('newpw').value;
+    if(p.length<6){amsg('パスワードは6文字以上にしてください');return}
+    var j=await api('changepw',{password:p});
+    if(j.ok){$('newpw').value='';amsg('パスワードを変更しました')}
+    else amsg(j.status===401?'ログインの有効期限が切れました。入り直してください':'変更に失敗しました');
+  });
+  async function loadSettings(){
+    var j=await api('settings');
+    if(j&&j.ok){$('min').value=j.min;$('max').value=j.max;$('norepeat').checked=!!j.nr}
+  }
+  loadSettings().then(function(){showRange();refresh()});
+  $('clear').addEventListener('click',function(){history=[];renderHist();$('num').textContent='–';refresh()});
+})();
+</script>
+</body>
+</html>
